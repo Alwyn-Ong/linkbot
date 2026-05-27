@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from urllib.parse import urlencode
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,37 @@ User correction: {correction}
 
 Return ONLY the updated JSON object."""
 
+_PLAN_PROMPT = """\
+You are a date planner. Build a concise itinerary using only entries from the user's saved places.
+
+User preferences:
+- Meal starting point: {meal}
+- Date: {date}
+- Area preference: {area}
+- Budget: {budget}
+
+Rules:
+- Include 2-4 stops ordered logically by time and proximity
+- Only include places whose opening hours fit the planned time
+- For events, only include if the date matches or overlaps
+- Prefer unvisited places (visited: false or missing)
+- Prefer places in or near the requested area
+- For each stop include: name, suggested time, why it fits
+- If not enough matching entries exist, say so and suggest what types to save
+
+Today's date: {today}
+
+Saved places:
+{dataset}"""
+
+_HOURS_PROMPT = """\
+Extract only the opening hours for "{name}" from the search results below.
+Return a single plain string (e.g. "Mon–Fri 11am–10pm, Sat–Sun 10am–11pm").
+If no opening hours are found, return null.
+
+Search results:
+{text}"""
+
 _QUERY_PROMPT = """\
 You are a personal assistant with access to the user's saved links database.
 Answer the user's query based on the data below. Be concise and helpful.
@@ -72,9 +104,28 @@ def _parse_json(text: str) -> dict:
     return json.loads(text.strip())
 
 
+def _enrich_hours(name: str) -> str | None:
+    import scraper
+    try:
+        search_name = name.replace("&", "and")
+        search_url = "https://html.duckduckgo.com/html/?" + urlencode({"q": f"{search_name} opening hours singapore"})
+        text = scraper.fetch(search_url)
+        result = _generate(_HOURS_PROMPT.format(name=name, text=text[:4000])).strip()
+        return None if result.lower() in ("null", "none", "") else result
+    except Exception as e:
+        logger.warning("Hours enrichment failed for %s: %s", name, e)
+        return None
+
+
 def extract(text: str, url: str) -> dict:
     prompt = _EXTRACT_PROMPT.format(url=url, text=text[:8000])
-    return _parse_json(_generate(prompt))
+    entry = _parse_json(_generate(prompt))
+    if not entry.get("hours") and entry.get("type") in ("restaurant", "place"):
+        logger.info("Hours missing, enriching via search for: %s", entry.get("name"))
+        hours = _enrich_hours(entry["name"])
+        if hours:
+            entry["hours"] = hours
+    return entry
 
 
 def merge_correction(existing: dict, correction: str) -> dict:
@@ -83,6 +134,20 @@ def merge_correction(existing: dict, correction: str) -> dict:
         correction=correction,
     )
     return _parse_json(_generate(prompt))
+
+
+def plan(entries: list, meal: str, date: str, area: str, budget: str) -> str:
+    from datetime import date as date_mod
+    dataset = json.dumps(entries, ensure_ascii=False, separators=(",", ":"))[:12000]
+    prompt = _PLAN_PROMPT.format(
+        meal=meal,
+        date=date,
+        area=area,
+        budget=budget,
+        today=date_mod.today().isoformat(),
+        dataset=dataset,
+    )
+    return _generate(prompt)
 
 
 def query(entries: list, user_query: str) -> str:

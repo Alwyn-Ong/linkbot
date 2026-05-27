@@ -3,6 +3,8 @@ import re
 from datetime import date
 from pathlib import Path
 
+import yaml
+
 
 def _links_dir() -> Path:
     vault = os.environ["OBSIDIAN_VAULT_PATH"]
@@ -28,25 +30,20 @@ def save(entry: dict) -> tuple[str, bool]:
     filepath = dir_ / _safe_filename(name)
     duplicate = filepath.exists()
 
-    tags = entry.get("tags") or []
-    tag_str = "[" + ", ".join(tags) + "]" if tags else "[]"
+    frontmatter = {
+        "name": name,
+        "type": entry.get("type") or "",
+        "address": entry.get("address") or "",
+        "hours": entry.get("hours") or "",
+        "date": entry.get("date") or "",
+        "tags": entry.get("tags") or [],
+        "price_range": entry.get("price_range") or "",
+        "visited": False,
+        "source": entry.get("source") or "",
+        "saved": date.today().isoformat(),
+    }
 
-    content = f"""\
----
-name: {name}
-type: {entry.get("type") or ""}
-address: {entry.get("address") or ""}
-hours: {entry.get("hours") or ""}
-date: {entry.get("date") or ""}
-tags: {tag_str}
-price_range: {entry.get("price_range") or ""}
-visited: false
-source: {entry.get("source") or ""}
-saved: {date.today().isoformat()}
----
-
-{entry.get("description") or ""}
-"""
+    content = "---\n" + yaml.dump(frontmatter, allow_unicode=True, sort_keys=False) + "---\n\n" + (entry.get("description") or "")
     filepath.write_text(content, encoding="utf-8")
     return str(filepath), duplicate
 
@@ -58,11 +55,11 @@ def _parse_note(filepath: Path) -> dict:
     parts = text.split("---", 2)
     if len(parts) < 3:
         return {"name": filepath.stem, "description": text.strip()}
-    entry: dict = {"description": parts[2].strip()}
-    for line in parts[1].splitlines():
-        if ":" in line:
-            key, _, val = line.partition(":")
-            entry[key.strip()] = val.strip()
+    try:
+        entry = yaml.safe_load(parts[1]) or {}
+    except yaml.YAMLError:
+        entry = {}
+    entry["description"] = parts[2].strip()
     return entry
 
 
