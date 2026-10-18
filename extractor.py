@@ -11,6 +11,7 @@ from google.api_core.exceptions import ResourceExhausted
 genai.configure(api_key=os.environ.get("GEMINI_API_KEY", ""))
 _model = genai.GenerativeModel("gemini-2.5-flash")
 _fallback_model = genai.GenerativeModel("gemini-3.1-flash-lite")
+_LOCATION = os.environ.get("LINKBOT_LOCATION", "Singapore")
 
 _EXTRACT_PROMPT = """\
 Extract structured information from the following web page content.
@@ -40,6 +41,17 @@ User correction: {correction}
 
 Return ONLY the updated JSON object."""
 
+_MERGE_IMAGE_PROMPT = """\
+You have extracted structured data about a place/event. The user has sent an image as a correction \
+or additional context (e.g. a photo of the venue, signage, menu, or opening hours).
+Update the JSON using information visible in the image. Only change fields the image clearly adds to \
+or contradicts — preserve all other fields as-is.
+{caption_section}
+Current data:
+{current}
+
+Return ONLY the updated JSON object."""
+
 _PLAN_PROMPT = """\
 You are a date planner. Build a concise itinerary using only entries from the user's saved places.
 
@@ -48,6 +60,7 @@ User preferences:
 - Date: {date}
 - Area preference: {area}
 - Budget: {budget}
+- Additional comments: {comments}
 
 Rules:
 - Include 2-4 stops ordered logically by time and proximity
@@ -55,6 +68,7 @@ Rules:
 - For events, only include if the date matches or overlaps
 - Prefer unvisited places (visited: false or missing)
 - Prefer places in or near the requested area
+- Take the additional comments into account when choosing and describing stops
 - For each stop include: name, suggested time, why it fits
 - If not enough matching entries exist, say so and suggest what types to save
 
@@ -63,11 +77,45 @@ Today's date: {today}
 Saved places:
 {dataset}"""
 
-_HOURS_PROMPT = """\
-Extract only the opening hours for "{name}" from the search results below.
-Return a single plain string (e.g. "Mon–Fri 11am–10pm, Sat–Sun 10am–11pm").
-If no opening hours are found, return null.
+_TEXT_EXTRACT_PROMPT = """\
+Extract structured information from the following Telegram message (e.g. an event, freebie, or activity announcement).
+Return ONLY a valid JSON object with these fields (use null for missing fields):
+- name: string — title or name of the event/place/freebie
+- type: string — one of: restaurant, event, article, place
+- address: string — physical location or venue
+- hours: string — daily operating hours if stated (e.g. "11AM - 9PM")
+- date: string — event date range or deadline (e.g. "Now till 26 Jul", "1–3 Aug 2025")
+- tags: array of 2-5 concise tags — e.g. "freebie", "family", "kids", area name (e.g. "changi", "orchard"); never use country names or broad regions; ignore hashtags from the source
+- price_range: string — e.g. $, $$, $$$, or "free"; null if unknown
+- description: string — 1-3 sentence summary of what it is
 
+Message:
+{text}"""
+
+_IMAGE_EXTRACT_PROMPT = """\
+Extract structured information from the attached image (e.g. an event poster, flyer, ticket, or social media screenshot).
+Return ONLY a valid JSON object with these fields (use null for missing fields):
+- name: string — title or name of the event/place
+- type: string — one of: restaurant, event, article, place
+- address: string — physical location or venue
+- hours: string — opening hours or event time, if shown (e.g. "11AM - 9PM")
+- date: string — event date range or deadline (e.g. "Now till 26 Jul", "1-3 Aug 2025")
+- tags: array of 2-5 concise tags — e.g. "freebie", "family", "kids", area name; never use country names or broad regions
+- price_range: string — e.g. $, $$, $$$, or "free"; null if unknown
+- description: string — 1-3 sentence summary of what it is
+{caption_section}"""
+
+_ENRICH_PROMPT = """\
+You have partial structured data about a place or event in {location}, but some fields are missing.
+Search the results below and fill in ONLY these missing fields: {fields}.
+Only use information that clearly refers to the {location} location/branch of "{name}" — if the search \
+results describe a different country or a different branch, leave that field null rather than guessing.
+Return ONLY a JSON object with exactly these keys: {fields}. Use null for any field still not found or \
+not clearly about the {location} location.
+
+Name: {name}
+Known info: {current}
+{image_section}
 Search results:
 {text}"""
 
@@ -88,11 +136,11 @@ Database:
 User query: {query}"""
 
 
-def _generate(prompt: str) -> str:
+def _generate(prompt: str | list) -> str:
     try:
         return _model.generate_content(prompt).text
     except ResourceExhausted:
-        logger.warning("gemini-2.5-flash rate limited, falling back to gemini-2.5-flash-lite")
+        logger.warning("gemini-2.5-flash rate limited, falling back to gemini-3.1-flash-lite")
         return _fallback_model.generate_content(prompt).text
 
 
@@ -104,28 +152,72 @@ def _parse_json(text: str) -> dict:
     return json.loads(text.strip())
 
 
-def _enrich_hours(name: str) -> str | None:
+_ENRICHABLE_FIELDS = ("address", "hours", "date", "price_range")
+
+
+def _enrich_via_search(entry: dict, image_bytes: bytes | None = None, mime_type: str = "image/jpeg") -> dict:
+    """Fill in any missing address/hours/date/price_range via a web search + Gemini pass.
+
+    If the entry was extracted from an image, that image is passed along too so Gemini
+    can cross-check search results against what's actually shown (e.g. confirm it's the
+    local branch, not a same-named place elsewhere).
+    """
+    if entry.get("type") not in ("restaurant", "place", "event"):
+        return entry
+    missing = [f for f in _ENRICHABLE_FIELDS if not entry.get(f)]
+    name = entry.get("name")
+    if not missing or not name:
+        return entry
+
     import scraper
     try:
         search_name = name.replace("&", "and")
-        search_url = "https://html.duckduckgo.com/html/?" + urlencode({"q": f"{search_name} opening hours singapore"})
+        search_url = "https://html.duckduckgo.com/html/?" + urlencode({"q": f"{search_name} {_LOCATION}"})
         text = scraper.fetch(search_url)
-        result = _generate(_HOURS_PROMPT.format(name=name, text=text[:4000])).strip()
-        return None if result.lower() in ("null", "none", "") else result
+        logger.info("Enriching missing fields (%s) via search for: %s", ", ".join(missing), name)
+        known = {k: entry.get(k) for k in ("type", "address", "hours", "date", "price_range")}
+        image_section = (
+            "\nAn image of the place/event is attached — use it to verify the search results "
+            "actually match (e.g. same branch/location), not just the same name.\n"
+            if image_bytes else ""
+        )
+        prompt = _ENRICH_PROMPT.format(
+            fields=", ".join(missing),
+            location=_LOCATION,
+            name=name,
+            current=json.dumps(known, ensure_ascii=False),
+            image_section=image_section,
+            text=text[:4000],
+        )
+        parts = [prompt, {"mime_type": mime_type, "data": image_bytes}] if image_bytes else prompt
+        result = _parse_json(_generate(parts))
+        for field in missing:
+            if result.get(field):
+                entry[field] = result[field]
     except Exception as e:
-        logger.warning("Hours enrichment failed for %s: %s", name, e)
-        return None
+        logger.warning("Enrichment failed for %s: %s", name, e)
+    return entry
+
+
+def extract_from_text(message: str) -> dict:
+    prompt = _TEXT_EXTRACT_PROMPT.format(text=message[:4000])
+    entry = _parse_json(_generate(prompt))
+    return _enrich_via_search(entry)
+
+
+def extract_from_image(image_bytes: bytes, caption: str = "", mime_type: str = "image/jpeg") -> dict:
+    image_bytes = bytes(image_bytes)
+    caption_section = f"\nMessage caption (additional context):\n{caption[:2000]}" if caption else ""
+    prompt = _IMAGE_EXTRACT_PROMPT.format(caption_section=caption_section)
+    parts = [prompt, {"mime_type": mime_type, "data": image_bytes}]
+    entry = _parse_json(_generate(parts))
+    return _enrich_via_search(entry, image_bytes=image_bytes, mime_type=mime_type)
 
 
 def extract(text: str, url: str) -> dict:
     prompt = _EXTRACT_PROMPT.format(url=url, text=text[:8000])
     entry = _parse_json(_generate(prompt))
-    if not entry.get("hours") and entry.get("type") in ("restaurant", "place"):
-        logger.info("Hours missing, enriching via search for: %s", entry.get("name"))
-        hours = _enrich_hours(entry["name"])
-        if hours:
-            entry["hours"] = hours
-    return entry
+    return _enrich_via_search(entry)
 
 
 def merge_correction(existing: dict, correction: str) -> dict:
@@ -136,7 +228,17 @@ def merge_correction(existing: dict, correction: str) -> dict:
     return _parse_json(_generate(prompt))
 
 
-def plan(entries: list, meal: str, date: str, area: str, budget: str) -> str:
+def merge_correction_from_image(existing: dict, image_bytes: bytes, caption: str = "", mime_type: str = "image/jpeg") -> dict:
+    caption_section = f"\nMessage caption (additional context):\n{caption[:2000]}\n" if caption else ""
+    prompt = _MERGE_IMAGE_PROMPT.format(
+        caption_section=caption_section,
+        current=json.dumps(existing, indent=2, ensure_ascii=False),
+    )
+    parts = [prompt, {"mime_type": mime_type, "data": bytes(image_bytes)}]
+    return _parse_json(_generate(parts))
+
+
+def plan(entries: list, meal: str, date: str, area: str, budget: str, comments: str = "") -> str:
     from datetime import date as date_mod
     dataset = json.dumps(entries, ensure_ascii=False, separators=(",", ":"))[:12000]
     prompt = _PLAN_PROMPT.format(
@@ -144,6 +246,7 @@ def plan(entries: list, meal: str, date: str, area: str, budget: str) -> str:
         date=date,
         area=area,
         budget=budget,
+        comments=comments or "none",
         today=date_mod.today().isoformat(),
         dataset=dataset,
     )
