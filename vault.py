@@ -8,7 +8,7 @@ import yaml
 
 def _links_dir() -> Path:
     vault = os.environ["OBSIDIAN_VAULT_PATH"]
-    folder = os.environ.get("OBSIDIAN_LINKS_FOLDER", "Links")
+    folder = os.environ.get("OBSIDIAN_LINKS_FOLDER") or "Links"
     return Path(vault) / folder
 
 

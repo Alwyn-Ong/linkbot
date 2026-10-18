@@ -11,7 +11,7 @@ from google.api_core.exceptions import ResourceExhausted
 genai.configure(api_key=os.environ.get("GEMINI_API_KEY", ""))
 _model = genai.GenerativeModel("gemini-2.5-flash")
 _fallback_model = genai.GenerativeModel("gemini-3.1-flash-lite")
-_LOCATION = os.environ.get("LINKBOT_LOCATION", "Singapore")
+_LOCATION = os.environ.get("LINKBOT_LOCATION") or "Singapore"
 
 _EXTRACT_PROMPT = """\
 Extract structured information from the following web page content.
