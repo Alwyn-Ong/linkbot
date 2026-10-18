@@ -10,3 +10,5 @@ venv/
 !.env.example
 .vscode/
 .idea/
+
+demo/*.mp4

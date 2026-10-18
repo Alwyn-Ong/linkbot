@@ -2,6 +2,12 @@
 
 A Telegram bot that saves links from mobile (Instagram, TikTok, web articles), extracts structured data using an LLM, stores entries in Obsidian, and answers natural language queries.
 
+## Demo
+
+![linkbot demo](docs/demo.gif)
+
+[Try the interactive scripted replay](https://alwyn-ong.github.io/linkbot/)
+
 ## What it does
 
 1. **Save**: Share any link from mobile via Telegram's share sheet → bot scrapes and extracts structured info
