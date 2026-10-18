@@ -17,8 +17,9 @@ mobile share sheet
 Telegram bot (Python, long-polling)
       ↓
 Jina Reader (r.jina.ai/<url>) — page → clean markdown
+(Instagram → Playwright, TikTok → yt-dlp)
       ↓
-Gemini API (gemini-2.0-flash) — extract structured JSON
+Gemini API (gemini-2.5-flash, falls back to gemini-3.1-flash-lite) — extract structured JSON
       ↓
 Obsidian vault — one .md note per entry, YAML frontmatter
       ↑
@@ -47,8 +48,8 @@ Free-text notes or description here.
 ## Stack
 
 - **Bot framework**: python-telegram-bot
-- **Scraping**: Jina Reader API (free, no key needed)
-- **LLM**: Gemini 2.0 Flash via Google AI Studio (free tier)
+- **Scraping**: Jina Reader API (free, no key needed); Playwright for Instagram; yt-dlp for TikTok
+- **LLM**: Gemini 2.5 Flash via Google AI Studio (free tier), with Flash-Lite fallback on rate limits
 - **Storage**: Obsidian vault (markdown files)
 - **Runtime**: local machine (runs when computer is on; Telegram queues messages when offline)
 
@@ -56,11 +57,24 @@ Free-text notes or description here.
 
 ```bash
 cp .env.example .env
-# fill in TELEGRAM_BOT_TOKEN and GEMINI_API_KEY
+# fill in TELEGRAM_BOT_TOKEN, GEMINI_API_KEY and ALLOWED_USER_ID
 
+python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+playwright install chromium
 python bot.py
 ```
+
+## Commands
+
+| Command | Description |
+|---|---|
+| *(send a link)* | Extract, preview, and save an entry |
+| *(send a question)* | Query your saved entries |
+| `/list` | Show recently saved entries |
+| `/delete <name>` | Remove an entry |
+| `/plan` | Multi-turn date planner |
+| `/cancel` | Cancel the current flow |
 
 ## Environment variables
 
@@ -70,3 +84,9 @@ python bot.py
 | `GEMINI_API_KEY` | From aistudio.google.com |
 | `OBSIDIAN_VAULT_PATH` | Absolute path to your Obsidian vault |
 | `OBSIDIAN_LINKS_FOLDER` | Subfolder within vault for link notes (default: `Links`) |
+| `ALLOWED_USER_ID` | Your numeric Telegram user ID (e.g. from @userinfobot). **Set this**: if empty, anyone who finds the bot can use it and spend your Gemini quota |
+| `LINKBOT_LOCATION` | City used to disambiguate hours/address lookups (default: `Singapore`) |
+
+## License
+
+MIT, see [LICENSE](LICENSE).
