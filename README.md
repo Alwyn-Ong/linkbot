@@ -90,7 +90,7 @@ python bot.py
 | `GEMINI_API_KEY` | From aistudio.google.com |
 | `OBSIDIAN_VAULT_PATH` | Absolute path to your Obsidian vault |
 | `OBSIDIAN_LINKS_FOLDER` | Subfolder within vault for link notes (default: `Links`) |
-| `ALLOWED_USER_ID` | Your numeric Telegram user ID (e.g. from @userinfobot). **Set this**: if empty, anyone who finds the bot can use it and spend your Gemini quota |
+| `ALLOWED_USER_ID` | Your numeric Telegram user ID (e.g. from @userinfobot). **Required**: the bot refuses to start without it, since otherwise anyone who finds the bot could use it and spend your Gemini quota |
 | `LINKBOT_LOCATION` | City used to disambiguate hours/address lookups (default: `Singapore`) |
 
 ## License

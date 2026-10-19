@@ -458,7 +458,7 @@ async def cmd_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 def main() -> None:
     if not _ALLOWED_USER_ID:
-        logger.warning("ALLOWED_USER_ID is not set: anyone who finds this bot can use it and spend your Gemini quota")
+        raise SystemExit("ALLOWED_USER_ID is not set: refusing to start, since anyone who finds this bot could use it and spend your Gemini quota")
     app = (
         Application.builder()
         .token(os.environ["TELEGRAM_BOT_TOKEN"])

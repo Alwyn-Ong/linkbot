@@ -73,7 +73,9 @@ def list_recent(n: int = 10) -> list:
 
 
 def delete(name: str) -> bool:
-    for filepath in _links_dir().rglob(_safe_filename(name)):
-        filepath.unlink()
-        return True
+    target = _safe_filename(name)
+    for filepath in _links_dir().rglob("*.md"):
+        if filepath.name == target:
+            filepath.unlink()
+            return True
     return False
