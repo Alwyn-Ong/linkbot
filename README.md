@@ -8,12 +8,15 @@ A Telegram bot that saves links from mobile (Instagram, TikTok, web articles), e
 
 [Try the interactive scripted replay](https://alwyn-ong.github.io/linkbot/)
 
+The GIF above predates the weather-aware suggestions. The interactive replay is current and shows the weather reason and wet-weather alternative in `/plan`.
+
 ## What it does
 
 1. **Save**: Share any link from mobile via Telegram's share sheet → bot scrapes and extracts structured info
 2. **Confirm**: Bot shows extracted data for review before saving; user can correct fields inline
 3. **Store**: Each entry is saved as a markdown note with YAML frontmatter in an Obsidian vault
 4. **Query**: Ask the bot natural language questions ("Japanese restaurants", "free events this weekend") → bot returns matching entries
+5. **Weather-aware suggestions**: For queries about today or tonight and for `/plan`, the bot passes the current data.gov.sg 2-hour forecast and PSI to Gemini. Outdoor places rank higher when the area is clear, indoor places when it's raining or hazy, and each pick says why. If an outdoor pick's area has rain in the forecast, it adds a wet-weather alternative. No API key is needed, and if the weather data is unavailable the bot answers without it
 
 ## Architecture
 
@@ -45,6 +48,7 @@ hours: 6pm–10pm
 date:                     # for events
 tags: [japanese, omakase]
 price_range: $$
+setting: indoor           # indoor | outdoor | both; used for weather ranking
 source: https://...
 saved: 2026-05-27
 ---
@@ -56,6 +60,7 @@ Free-text notes or description here.
 - **Bot framework**: python-telegram-bot
 - **Scraping**: Jina Reader API (free, no key needed); Playwright for Instagram; yt-dlp for TikTok
 - **LLM**: Gemini 2.5 Flash via Google AI Studio (free tier), with Flash-Lite fallback on rate limits
+- **Weather**: data.gov.sg 2-hour forecast and PSI (no key needed, cached for 15 minutes)
 - **Storage**: Obsidian vault (markdown files)
 - **Runtime**: local machine (runs when computer is on; Telegram queues messages when offline)
 
