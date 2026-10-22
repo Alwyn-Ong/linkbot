@@ -29,6 +29,7 @@ def test_query_prompt_includes_conditions_and_rules():
     prompt = _prompt_for(_query, CONDITIONS)
     assert "- Bedok: Light Rain" in prompt
     assert "missing means unknown" in prompt
+    assert "Wet-weather alternative:" in prompt
 
 
 def test_plan_prompt_includes_conditions_and_reason():

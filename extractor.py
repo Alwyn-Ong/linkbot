@@ -149,6 +149,9 @@ indoor places up when it is raining or hazy (PSI over 100). Never exclude a plac
 leave unknown settings where they are.
 - When weather affected a pick, say so in one short clause (e.g. "clear until midnight, good for the rooftop bar"). \
 Never claim anything about the weather that isn't in the conditions below.
+- If you suggest an outdoor or both place and its area's forecast mentions rain, showers or thunder, add a \
+"Wet-weather alternative:" line naming a saved indoor place nearby (same area if possible). Skip the line if no \
+saved indoor place fits.
 """
 
 
