@@ -58,8 +58,8 @@ Goal: outdoor saves rank higher on clear days, and each suggestion says why.
 - [x] Confirm the API: `two-hr-forecast` and `psi` on `api-open.data.gov.sg/v2/real-time/api` both work without a key (verified 2026-10-22)
 - [x] `weather.py` — fetch the 2-hour forecast and PSI, cache for ~15 min, fail soft; returns prompt-ready text and Gemini maps each place to its area (no zone matching in code)
 - [x] Add a `setting` field (indoor/outdoor/both) to `extractor.py` output, `vault.py` frontmatter and the bot preview; old notes without it count as unknown
-- [ ] Re-rank in the query and `/plan` prompts: unvisited and ongoing events first (existing), then outdoor up on clear, indoor up on rain; pass the forecast into the Gemini prompt
-- [ ] Each suggestion states its reason ("clear until 6pm, good for the rooftop bar")
+- [x] Re-rank in the query and `/plan` prompts: unvisited and ongoing events first (existing), then outdoor up on clear, indoor up on rain; pass the forecast into the Gemini prompt
+- [x] Each suggestion states its reason ("clear until 6pm, good for the rooftop bar")
 - [x] Tests for `weather.py` (mocked response, cache hit, API down)
 - [ ] Re-record `docs/demo.gif` and `demo/demo.mp4` only if the "why" line shows in the demo flow; use `demo/seed_vault.py` data so no personal content appears
 - [ ] Before publishing the new demo: watch it through for personal content (open item from Phase 4 polish)

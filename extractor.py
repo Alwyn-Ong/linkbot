@@ -3,6 +3,8 @@ import logging
 import os
 from urllib.parse import urlencode
 
+import weather
+
 logger = logging.getLogger(__name__)
 
 import google.generativeai as genai
@@ -69,12 +71,12 @@ Rules:
 - For events, only include if the date matches or overlaps
 - Prefer unvisited places (visited: false or missing)
 - Prefer places in or near the requested area
-- Take the additional comments into account when choosing and describing stops
-- For each stop include: name, suggested time, why it fits
+{weather_rules}- Take the additional comments into account when choosing and describing stops
+- For each stop include: name, suggested time, why it fits{weather_reason}
 - If not enough matching entries exist, say so and suggest what types to save
 
 Today's date: {today}
-
+{weather}
 Saved places:
 {dataset}"""
 
@@ -132,11 +134,30 @@ Prioritisation rules:
 - For places (restaurants, cafes, etc.): prefer entries where visited is false or missing.
 - For events: prefer entries where the date is ongoing or upcoming relative to today ({today}); \
 deprioritise past events.
-
+{weather_rules}
+{weather}
 Database:
 {dataset}
 
 User query: {query}"""
+
+
+_WEATHER_RULES = """\
+- Weather: each place has a setting (indoor, outdoor, both; missing means unknown). Use the current conditions \
+below only if the request is for today or tonight. Move outdoor places up when the place's area is clear and \
+indoor places up when it is raining or hazy (PSI over 100). Never exclude a place for weather alone, and \
+leave unknown settings where they are.
+- When weather affected a pick, say so in one short clause (e.g. "clear until midnight, good for the rooftop bar"). \
+Never claim anything about the weather that isn't in the conditions below.
+"""
+
+
+def _weather_prompt_parts() -> tuple[str, str]:
+    """(rules, conditions) for a prompt; both empty when no forecast is available."""
+    conditions = weather.get_conditions()
+    if not conditions:
+        return "", ""
+    return _WEATHER_RULES, f"\nCurrent conditions:\n{conditions}\n"
 
 
 def _generate(prompt: str | list) -> str:
@@ -244,7 +265,11 @@ def merge_correction_from_image(existing: dict, image_bytes: bytes, caption: str
 def plan(entries: list, meal: str, date: str, area: str, budget: str, comments: str = "") -> str:
     from datetime import date as date_mod
     dataset = json.dumps(entries, ensure_ascii=False, separators=(",", ":"))[:12000]
+    weather_rules, conditions = _weather_prompt_parts()
     prompt = _PLAN_PROMPT.format(
+        weather_rules=weather_rules,
+        weather_reason=" (and the weather, if it mattered)" if conditions else "",
+        weather=conditions,
         meal=meal,
         date=date,
         area=area,
@@ -268,5 +293,12 @@ def query(entries: list, user_query: str) -> str:
         compact.append(row)
 
     dataset = json.dumps(compact, ensure_ascii=False, separators=(",", ":"))[:12000]
-    prompt = _QUERY_PROMPT.format(dataset=dataset, query=user_query, today=date.today().isoformat())
+    weather_rules, conditions = _weather_prompt_parts()
+    prompt = _QUERY_PROMPT.format(
+        weather_rules=weather_rules,
+        weather=conditions,
+        dataset=dataset,
+        query=user_query,
+        today=date.today().isoformat(),
+    )
     return _generate(prompt)
