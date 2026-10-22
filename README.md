@@ -8,8 +8,6 @@ A Telegram bot that saves links from mobile (Instagram, TikTok, web articles), e
 
 [Try the interactive scripted replay](https://alwyn-ong.github.io/linkbot/)
 
-The GIF above predates the weather-aware suggestions. The interactive replay is current and shows the weather reason and wet-weather alternative in `/plan`.
-
 ## What it does
 
 1. **Save**: Share any link from mobile via Telegram's share sheet → bot scrapes and extracts structured info
