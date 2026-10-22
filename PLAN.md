@@ -50,3 +50,18 @@
 - **Gemini free tier** — `gemini-2.5-flash` primary, `gemini-3.1-flash-lite` fallback (500 RPD)
 - **Obsidian over SQLite** — human-readable, editable by hand, browsable on mobile via Obsidian app, already in user's workflow
 - **Jina Reader over direct scraping** — handles JS-heavy pages, no browser dependency, free
+
+## Phase 6 — Weather-aware suggestions (data.gov.sg)
+
+Goal: outdoor saves rank higher on clear days, and each suggestion says why.
+
+- [x] Confirm the API: `two-hr-forecast` and `psi` on `api-open.data.gov.sg/v2/real-time/api` both work without a key (verified 2026-10-22)
+- [x] `weather.py` — fetch the 2-hour forecast and PSI, cache for ~15 min, fail soft; returns prompt-ready text and Gemini maps each place to its area (no zone matching in code)
+- [ ] Add an `indoor`/`outdoor` field to `extractor.py` output and `vault.py` frontmatter; default old notes to unknown
+- [ ] Re-rank in the query and `/plan` prompts: unvisited and ongoing events first (existing), then outdoor up on clear, indoor up on rain; pass the forecast into the Gemini prompt
+- [ ] Each suggestion states its reason ("clear until 6pm, good for the rooftop bar")
+- [x] Tests for `weather.py` (mocked response, cache hit, API down)
+- [ ] Re-record `docs/demo.gif` and `demo/demo.mp4` only if the "why" line shows in the demo flow; use `demo/seed_vault.py` data so no personal content appears
+- [ ] Before publishing the new demo: watch it through for personal content (open item from Phase 4 polish)
+
+Later, not now: carpark availability for drive-to venues; filter or embed notes before prompting once the vault is large enough that sending everything hurts.
