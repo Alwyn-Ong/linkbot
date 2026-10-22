@@ -19,8 +19,6 @@ A Telegram bot that saves links from mobile (Instagram, TikTok, web articles), e
 ## Architecture
 
 ```
-mobile share sheet
-      ↓
 Telegram bot (Python, long-polling)
       ↓
 Jina Reader (r.jina.ai/<url>) — page → clean markdown
@@ -30,7 +28,7 @@ Gemini API (gemini-2.5-flash, falls back to gemini-3.1-flash-lite) — extract s
       ↓
 Obsidian vault — one .md note per entry, YAML frontmatter
       ↑
-Telegram query — bot reads vault files → Gemini → formatted response
+Telegram query — bot reads vault files + data.gov.sg weather (2-hour forecast, PSI) → Gemini → formatted response
 ```
 
 ## Note schema
