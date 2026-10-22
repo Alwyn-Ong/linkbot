@@ -130,19 +130,19 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; ga
   const pretty = d => d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
 
   const vault = [
-    { name: "Sushi Kuuya", type: "restaurant", address: "12 Tras Street, Singapore", hours: "6pm-10:30pm, closed Sun", date: "", tags: ["japanese", "omakase", "date-spot", "tanjong pagar"], price_range: "$$$", source: "https://example.com/sushi-kuuya", description: "Intimate counter-only omakase with a seasonal menu." },
-    { name: "Ramen Hako", type: "restaurant", address: "88 Orchard Road, Singapore", hours: "11am-10pm daily", date: "", tags: ["japanese", "ramen", "casual", "orchard"], price_range: "$", source: "https://example.com/ramen-hako", description: "Rich tonkotsu broth and a short, focused menu." },
-    { name: "Birds of a Feather Cafe", type: "restaurant", address: "5 Jiak Chuan Road, Singapore", hours: "9am-5pm, closed Mon", date: "", tags: ["brunch", "cafe", "casual", "chinatown"], price_range: "$$", source: "https://example.com/birds-cafe", description: "Sunny brunch spot known for its eggs benedict and cold brew." },
-    { name: "Hawker Supper Crawl", type: "event", address: "Maxwell Food Centre, Singapore", hours: "8pm-12am", date: iso(saturday), tags: ["supper", "hawker", "free", "cbd"], price_range: "$", source: "https://example.com/supper-crawl", description: "Guided late-night tasting walk across Maxwell and Chinatown Complex. Free to join." },
-    { name: "Sunset Jazz at the Gardens", type: "event", address: "Singapore Botanic Gardens", hours: "5pm-9pm", date: iso(sunday), tags: ["music", "outdoor", "free", "date-spot"], price_range: "", source: "https://example.com/gardens-jazz", description: "Open-air jazz on the Symphony Lake stage. Bring a picnic mat." },
-    { name: "Haw Par Villa", type: "place", address: "262 Pasir Panjang Road, Singapore", hours: "9am-7pm daily", date: "", tags: ["quirky", "sightseeing", "free", "west"], price_range: "", source: "https://example.com/haw-par-villa", description: "Surreal mythology theme park with dioramas of Chinese folklore." },
-    { name: "Why Singapore's Hawker Culture Is Special", type: "article", address: "", hours: "", date: "", tags: ["food", "culture", "hawker"], price_range: "", source: "https://example.com/hawker-culture", description: "Long read on the history and future of Singapore's hawker centres." },
+    { name: "Sushi Kuuya", setting: "indoor", type: "restaurant", address: "12 Tras Street, Singapore", hours: "6pm-10:30pm, closed Sun", date: "", tags: ["japanese", "omakase", "date-spot", "tanjong pagar"], price_range: "$$$", source: "https://example.com/sushi-kuuya", description: "Intimate counter-only omakase with a seasonal menu." },
+    { name: "Ramen Hako", setting: "indoor", type: "restaurant", address: "88 Orchard Road, Singapore", hours: "11am-10pm daily", date: "", tags: ["japanese", "ramen", "casual", "orchard"], price_range: "$", source: "https://example.com/ramen-hako", description: "Rich tonkotsu broth and a short, focused menu." },
+    { name: "Birds of a Feather Cafe", setting: "indoor", type: "restaurant", address: "5 Jiak Chuan Road, Singapore", hours: "9am-5pm, closed Mon", date: "", tags: ["brunch", "cafe", "casual", "chinatown"], price_range: "$$", source: "https://example.com/birds-cafe", description: "Sunny brunch spot known for its eggs benedict and cold brew." },
+    { name: "Hawker Supper Crawl", setting: "both", type: "event", address: "Maxwell Food Centre, Singapore", hours: "8pm-12am", date: iso(saturday), tags: ["supper", "hawker", "free", "cbd"], price_range: "$", source: "https://example.com/supper-crawl", description: "Guided late-night tasting walk across Maxwell and Chinatown Complex. Free to join." },
+    { name: "Sunset Jazz at the Gardens", setting: "outdoor", type: "event", address: "Singapore Botanic Gardens", hours: "5pm-9pm", date: iso(sunday), tags: ["music", "outdoor", "free", "date-spot"], price_range: "", source: "https://example.com/gardens-jazz", description: "Open-air jazz on the Symphony Lake stage. Bring a picnic mat." },
+    { name: "Haw Par Villa", setting: "outdoor", type: "place", address: "262 Pasir Panjang Road, Singapore", hours: "9am-7pm daily", date: "", tags: ["quirky", "sightseeing", "free", "west"], price_range: "", source: "https://example.com/haw-par-villa", description: "Surreal mythology theme park with dioramas of Chinese folklore." },
+    { name: "Why Singapore's Hawker Culture Is Special", setting: "", type: "article", address: "", hours: "", date: "", tags: ["food", "culture", "hawker"], price_range: "", source: "https://example.com/hawker-culture", description: "Long read on the history and future of Singapore's hawker centres." },
   ];
 
   const IG_URL = "https://www.instagram.com/reel/DJx4kQpRt2m/";
   const TT_URL = "https://www.tiktok.com/@sgfoodwander/video/7391204558816";
-  const maru = { name: "Maru Donburi", type: "restaurant", address: "21 Bukit Pasoh Road, Singapore", hours: "5pm-10pm", date: "", tags: ["japanese", "donburi", "casual", "tanjong pagar"], price_range: "$$", source: IG_URL, description: "Tiny donburi counter serving thick-cut sashimi rice bowls and a daily special." };
-  const souffle = { name: "Cloud Nine Souffle", type: "restaurant", address: "40 Tanjong Pagar Road, Singapore", hours: "12pm-9pm", date: "", tags: ["dessert", "cafe", "souffle", "tanjong pagar"], price_range: "$$", source: TT_URL, description: "Jiggly Japanese-style souffle pancakes, baked to order." };
+  const maru = { name: "Maru Donburi", setting: "indoor", type: "restaurant", address: "21 Bukit Pasoh Road, Singapore", hours: "5pm-10pm", date: "", tags: ["japanese", "donburi", "casual", "tanjong pagar"], price_range: "$$", source: IG_URL, description: "Tiny donburi counter serving thick-cut sashimi rice bowls and a daily special." };
+  const souffle = { name: "Cloud Nine Souffle", setting: "indoor", type: "restaurant", address: "40 Tanjong Pagar Road, Singapore", hours: "12pm-9pm", date: "", tags: ["dessert", "cafe", "souffle", "tanjong pagar"], price_range: "$$", source: TT_URL, description: "Jiggly Japanese-style souffle pancakes, baked to order." };
 
   const $ = id => document.getElementById(id);
   const msgs = $("msgs"), input = $("input"), tree = $("tree"), note = $("note");
@@ -153,7 +153,7 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; ga
     return [
       `Name:        ${dash(e.name)}`, `Type:        ${dash(e.type)}`, `Address:     ${dash(e.address)}`,
       `Hours:       ${dash(e.hours)}`, `Date:        ${dash(e.date)}`, `Tags:        ${e.tags.join(", ") || "—"}`,
-      `Price:       ${dash(e.price_range)}`, "", e.description, "", "Reply 'ok' to save, or type a correction.",
+      `Price:       ${dash(e.price_range)}`, `Setting:     ${dash(e.setting)}`, "", e.description, "", "Reply 'ok' to save, or type a correction.",
     ].join("\n");
   }
 
@@ -226,7 +226,7 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; ga
     Object.values(files).forEach(f => f.classList.remove("open"));
     files[name].classList.add("open");
     files[name].scrollIntoView({ block: "nearest" });
-    const fm = [["name", e.name], ["type", e.type], ["address", e.address], ["hours", e.hours], ["date", e.date], ["tags", e.tags], ["price_range", e.price_range], ["visited", false], ["source", e.source], ["saved", iso(today)]];
+    const fm = [["name", e.name], ["type", e.type], ["address", e.address], ["hours", e.hours], ["date", e.date], ["tags", e.tags], ["price_range", e.price_range], ["setting", e.setting], ["visited", false], ["source", e.source], ["saved", iso(today)]];
     note.innerHTML = "";
     const h = document.createElement("h2"); h.textContent = `${e.name}.md`;
     const pre = document.createElement("pre");
@@ -297,7 +297,7 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; ga
     await bot(id, "Lunch or dinner onwards? (default: dinner)", { think: 350 });
     await user(id, "dinner");
     await bot(id, "Which date? (e.g. today, tomorrow, or a date)", { think: 350 });
-    await user(id, "saturday");
+    await user(id, "today");
     await bot(id, "Any area preference? (e.g. orchard, cbd — or 'anywhere')", { think: 350 });
     await user(id, "anywhere");
     await bot(id, "Budget? (default: $ and $$)", { think: 350 });
@@ -305,8 +305,8 @@ main { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; ga
     await bot(id, "Any other preferences? (e.g. 'no seafood', 'celebrating anniversary' — or 'skip')", { think: 350 });
     await user(id, "skip");
     await bot(id, "Planning...", { think: 400 });
-    highlight(["Maru Donburi", "Cloud Nine Souffle", "Hawker Supper Crawl"]);
-    await bot(id, `Saturday evening plan (${pretty(saturday)})\n\n1. 6:00pm — Maru Donburi ($$)\nStill unvisited and open until 9pm; a relaxed donburi dinner on Bukit Pasoh Road.\n\n2. 7:30pm — Cloud Nine Souffle ($$)\nA short walk away, open until 9pm. Dessert before the night walk.\n\n3. 8:30pm — Hawker Supper Crawl (free)\nStarts at 8pm at Maxwell Food Centre, minutes from Tanjong Pagar.`, { think: 2200 });
+    highlight(["Haw Par Villa", "Maru Donburi", "Cloud Nine Souffle"]);
+    await bot(id, "Tonight's plan\n\n1. 5:00pm — Haw Par Villa (free)\nClear in the west for the next 2 hours, and it closes at 7pm, so do the outdoor stop first.\nWet-weather alternative: Cloud Nine Souffle (indoor, open until 9pm).\n\n2. 6:45pm — Maru Donburi ($$)\nStill unvisited and open until 10pm; a relaxed donburi dinner on Bukit Pasoh Road.", { think: 2200 });
   }
 
   async function start() {

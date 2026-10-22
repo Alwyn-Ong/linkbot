@@ -61,7 +61,7 @@ Goal: outdoor saves rank higher on clear days, and each suggestion says why.
 - [x] Re-rank in the query and `/plan` prompts: unvisited and ongoing events first (existing), then outdoor up on clear, indoor up on rain; pass the forecast into the Gemini prompt
 - [x] Each suggestion states its reason ("clear until 6pm, good for the rooftop bar")
 - [x] Tests for `weather.py` (mocked response, cache hit, API down)
-- [ ] Re-record `docs/demo.gif` and `demo/demo.mp4` only if the "why" line shows in the demo flow; use `demo/seed_vault.py` data so no personal content appears
-- [ ] Before publishing the new demo: watch it through for personal content (open item from Phase 4 polish)
+- [x] Show the "why" line in the demo: updated the scripted `docs/index.html` (setting field, weather reason, wet-weather alternative) instead of re-recording; `docs/demo.gif` and `demo/demo.mp4` are stale and not re-recorded
+- [x] Before publishing the new demo: checked `docs/index.html` for personal content (all names, addresses and URLs are fictional or example.com) (open item from Phase 4 polish)
 
 Later, not now: carpark availability for drive-to venues; filter or embed notes before prompting once the vault is large enough that sending everything hurts.
