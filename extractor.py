@@ -23,6 +23,7 @@ Return ONLY a valid JSON object with these fields (use null for missing fields):
 - date: string — for events, the date(s); null otherwise
 - tags: array of 2-5 concise tags — use specific, useful categories like cuisine type (e.g. "japanese", "omakase"), meal type (e.g. "brunch", "supper"), vibe (e.g. "date-spot", "casual"), or neighbourhood (e.g. "orchard", "cbd"); never use country names or broad regions; ignore hashtags from the source post
 - price_range: string — e.g. $, $$, $$$; null if unknown
+- setting: string — one of: indoor, outdoor, both (e.g. a rooftop bar or a place with indoor and outdoor seating); null if unclear or an article
 - description: string — 1-3 sentence summary
 
 Source URL: {url}
@@ -87,6 +88,7 @@ Return ONLY a valid JSON object with these fields (use null for missing fields):
 - date: string — event date range or deadline (e.g. "Now till 26 Jul", "1–3 Aug 2025")
 - tags: array of 2-5 concise tags — e.g. "freebie", "family", "kids", area name (e.g. "changi", "orchard"); never use country names or broad regions; ignore hashtags from the source
 - price_range: string — e.g. $, $$, $$$, or "free"; null if unknown
+- setting: string — one of: indoor, outdoor, both (e.g. a rooftop bar or a place with indoor and outdoor seating); null if unclear or an article
 - description: string — 1-3 sentence summary of what it is
 
 Message:
@@ -102,6 +104,7 @@ Return ONLY a valid JSON object with these fields (use null for missing fields):
 - date: string — event date range or deadline (e.g. "Now till 26 Jul", "1-3 Aug 2025")
 - tags: array of 2-5 concise tags — e.g. "freebie", "family", "kids", area name; never use country names or broad regions
 - price_range: string — e.g. $, $$, $$$, or "free"; null if unknown
+- setting: string — one of: indoor, outdoor, both (e.g. a rooftop bar or a place with indoor and outdoor seating); null if unclear or an article
 - description: string — 1-3 sentence summary of what it is
 {caption_section}"""
 

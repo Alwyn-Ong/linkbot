@@ -98,6 +98,7 @@ def _format_preview(entry: dict) -> str:
         f"Date:        {entry.get('date') or '—'}",
         f"Tags:        {tags}",
         f"Price:       {entry.get('price_range') or '—'}",
+        f"Setting:     {entry.get('setting') or '—'}",
         "",
         entry.get("description") or "",
         "",

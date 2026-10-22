@@ -38,6 +38,7 @@ def save(entry: dict) -> tuple[str, bool]:
         "date": entry.get("date") or "",
         "tags": entry.get("tags") or [],
         "price_range": entry.get("price_range") or "",
+        "setting": entry.get("setting") or "",
         "visited": False,
         "source": entry.get("source") or "",
         "saved": date.today().isoformat(),
